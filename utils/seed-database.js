@@ -11,7 +11,7 @@ const Tag = require('../models/tag');
 const { folders, notes, tags } = require('../db/data');
 
 console.log(`Connecting to mongodb at ${MONGODB_URI}`);
-mongoose.connect(MONGODB_URI, { useNewUrlParser: true })
+mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useCreateIndex : true })
   .then(() => {
     console.info('Delete Data');
     return Promise.all([
