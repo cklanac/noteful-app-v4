@@ -21,13 +21,13 @@ schema.set('toJSON', {
 });
 
 // Note: Use `function` (not an `arrow function`) to allow setting `this`
-schema.methods.validatePassword = function (pwd) {
-  const currentUser = this;
-  return bcrypt.compare(pwd, currentUser.password);
+schema.methods.validatePassword = function (incomingPassword) {
+  const user = this;
+  return bcrypt.compare(incomingPassword, user.password);
 };
 
-schema.statics.hashPassword = function (pwd) {
-  return bcrypt.hash(pwd, 10);
+schema.statics.hashPassword = function (incomingPassword) {
+  return bcrypt.hash(incomingPassword, 10);
 };
 
 module.exports = mongoose.model('User', schema);
