@@ -34,7 +34,7 @@ module.exports = {
     "no-eval": "error",
     "quotes": [
       2,
-      "double",
+      "single",
       "avoid-escape"
     ],
     "indent": [

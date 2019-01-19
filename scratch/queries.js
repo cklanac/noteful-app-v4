@@ -1,11 +1,11 @@
-const mongoose = require("mongoose");
-const { MONGODB_URI } = require("../config");
+const mongoose = require('mongoose');
+const { MONGODB_URI } = require('../config');
 
-const Note = require("../models/note");
+const Note = require('../models/note');
 
-mongoose.set("useNewUrlParser", true);
-mongoose.set("useFindAndModify", false);
-mongoose.set("useCreateIndex", true);
+mongoose.set('useNewUrlParser', true);
+mongoose.set('useFindAndModify', false);
+mongoose.set('useCreateIndex', true);
 
 mongoose.connect(MONGODB_URI)
   .then(() => {
@@ -13,7 +13,7 @@ mongoose.connect(MONGODB_URI)
     /**
      * Find/Search for notes using Note.find
      */
-    const searchTerm = "gaga";
+    const searchTerm = 'gaga';
     let filter = {};
 
     if (searchTerm) {
@@ -27,7 +27,7 @@ mongoose.connect(MONGODB_URI)
       // filter.title = /ways/i;
     }
 
-    return Note.find(filter).sort({ updatedAt: "desc" })
+    return Note.find(filter).sort({ updatedAt: 'desc' })
       .then(results => {
         console.log(results);
       });

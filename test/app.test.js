@@ -1,42 +1,44 @@
 // Clear the console before each run
 // process.stdout.write("\x1Bc\n");
 
-const chai = require("chai");
-const chaiHttp = require("chai-http");
+const chai = require('chai');
+const chaiHttp = require('chai-http');
 
-const app = require("../app");
+process.env.LOG_FORMAT = 'none';
+const app = require('../app');
 
 const expect = chai.expect;
 
+
 chai.use(chaiHttp);
 
-describe("Reality Check", () => {
+describe('Reality Check', () => {
 
-  it("true should be true", () => {
+  it('true should be true', () => {
     expect(true).to.be.true;
   });
 
-  it("2 + 2 should equal 4", () => {
+  it('2 + 2 should equal 4', () => {
     expect(2 + 2).to.equal(4);
   });
 
 });
 
-describe("Environment", () => {
+describe('Environment', () => {
 
   it('NODE_ENV should be "test"', () => {
-    expect(process.env.NODE_ENV).to.equal("test");
+    expect(app.get('env')).to.equal('test');
   });
 
 });
 
-describe("Basic Express setup", () => {
+describe('Basic Express setup', () => {
 
-  describe("Express static", () => {
+  describe('Express static', () => {
 
     it('GET request "/" should return the index page', () => {
       return chai.request(app)
-        .get("/")
+        .get('/')
         .then(function (res) {
           expect(res).to.exist;
           expect(res).to.have.status(200);
@@ -46,11 +48,11 @@ describe("Basic Express setup", () => {
 
   });
 
-  describe("404 handler", () => {
+  describe('404 handler', () => {
 
-    it("should respond with 404 when given a bad path", () => {
+    it('should respond with 404 when given a bad path', () => {
       return chai.request(app)
-        .get("/bad/path")
+        .get('/bad/path')
         .then(res => {
           expect(res).to.have.status(404);
         });

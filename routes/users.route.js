@@ -1,15 +1,16 @@
-const express = require("express");
-const createError = require("http-errors");
+const express = require('express');
+const createError = require('http-errors');
+const debug = require('debug')('app:routes');
 
-const User = require("../models/user");
+const { user } = require('../services');
 
 const router = express.Router();
 
-/* ========== POST/CREATE AN ITEM ========== */
-router.post("/", (req, res, next) => {
+router.post('/', (req, res, next) => {
+  debug(req.originalUrl);
 
   /***** Never trust users - validate input *****/
-  const requiredFields = ["username", "password"];
+  const requiredFields = ['username', 'password'];
   const missingField = requiredFields.find(field => !(field in req.body));
 
   if (missingField) {
@@ -17,9 +18,9 @@ router.post("/", (req, res, next) => {
     return next(err);
   }
 
-  const stringFields = ["username", "password", "fullname"];
+  const stringFields = ['username', 'password', 'fullname'];
   const nonStringField = stringFields.find(
-    field => field in req.body && typeof req.body[field] !== "string"
+    field => field in req.body && typeof req.body[field] !== 'string'
   );
 
   if (nonStringField) {
@@ -34,7 +35,7 @@ router.post("/", (req, res, next) => {
   // trimming them and expecting the user to understand.
   // We'll silently trim the other fields, because they aren't credentials used
   // to log in, so it's less of a problem.
-  const explicityTrimmedFields = ["username", "password"];
+  const explicityTrimmedFields = ['username', 'password'];
   const nonTrimmedField = explicityTrimmedFields.find(
     field => req.body[field].trim() !== req.body[field]
   );
@@ -52,7 +53,7 @@ router.post("/", (req, res, next) => {
   };
 
   const tooSmallField = Object.keys(sizedFields).find(
-    field => "min" in sizedFields[field] &&
+    field => 'min' in sizedFields[field] &&
       req.body[field].trim().length < sizedFields[field].min
   );
   if (tooSmallField) {
@@ -62,7 +63,7 @@ router.post("/", (req, res, next) => {
   }
 
   const tooLargeField = Object.keys(sizedFields).find(
-    field => "max" in sizedFields[field] &&
+    field => 'max' in sizedFields[field] &&
       req.body[field].trim().length > sizedFields[field].max
   );
 
@@ -73,18 +74,10 @@ router.post("/", (req, res, next) => {
   }
 
   // Username and password were validated as pre-trimmed
-  let { username, password, fullname = "" } = req.body;
+  let { username, password, fullname = '' } = req.body;
   fullname = fullname.trim();
 
-  return User.hashPassword(password)
-    .then(digest => {
-      const newUser = {
-        username,
-        password: digest,
-        fullname
-      };
-      return User.create(newUser);
-    })
+  return user.insert({ username, password, fullname })
     .then(result => {
       return res.status(201).location(`/api/users/${result.id}`).json(result);
     })

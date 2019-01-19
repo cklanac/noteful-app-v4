@@ -16,8 +16,6 @@ const options = {
 
 const token = jwt.sign(payload, JWT_SECRET, options);
 
-console.log(token);
-
 try {
   const decoded = jwt.verify(token, JWT_SECRET);
   console.log(decoded);

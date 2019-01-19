@@ -1,24 +1,22 @@
-const app = require("./app");
-const mongoose = require("mongoose");
-const { PORT, MONGODB_URI } = require("./config");
+const http = require('http');
+const app = require('./app');
+const db = require('./db/mongoose');
+const debug = require('debug')('app:http');
 
-mongoose.set("useNewUrlParser", true);
-mongoose.set("useFindAndModify", false);
-mongoose.set("useCreateIndex", true);
+const { PORT, MONGODB_URI } = require('./config');
 
-// Listen on provided port
-app.listen(PORT, function () {
-  console.info(`Server listening on ${this.address().port}`);
-}).on("error", err => {
-  console.error(err);
-});
-
-// Connect to DB
-mongoose.connect(MONGODB_URI)
-  .then(instance => {
-    const conn = instance.connections[0];
-    console.info(`Connected to: mongodb://${conn.host}:${conn.port}/${conn.name}`);
+db.connect(MONGODB_URI)
+  .then(mongoose => {
+    const { host, port, name } = mongoose.connection;
+    console.info(`Connected to: mongodb://${host}:${port}/${name}`);
   })
   .catch(err => {
-    console.error(err);
+    debug(err);
+  });
+
+http.createServer(app)
+  .listen(PORT, function () {
+    debug(`listening on ${this.address().port}`);
+  }).on('error', err => {
+    debug(err);
   });

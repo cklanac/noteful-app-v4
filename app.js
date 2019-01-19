@@ -1,54 +1,48 @@
-const express = require("express");
-const createError = require("http-errors");
+const path = require('path');
+const express = require('express');
+const compression = require('compression');
+const favicon = require('serve-favicon');
+const createError = require('http-errors');
+const cookieParser = require('cookie-parser');
+const debug = require('debug')('app:init');
 
-const { cors, logger } = require("./middleware");
 
-const notesRouter = require("./routes/notes");
-const foldersRouter = require("./routes/folders");
-const tagsRouter = require("./routes/tags");
-const usersRouter = require("./routes/users");
-const authRouter = require("./routes/auth");
+const { cors, logger, notFoundRouter, serverErrorRouter } = require('./middleware');
 
-// Create an Express application
+const routes = require('./routes');
+
+debug('initialize express');
 const app = express();
 
-// Log all requests
+debug('load middleware');
+app.use(compression());
 app.use(logger);
-
-// Create a static webserver
-app.use(express.static("public"));
-
-// Log all requests
+app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors);
-
-// Parse request body
 app.use(express.json());
+app.use(cookieParser());
 
-// Mount user registration
-app.use("/api/users", usersRouter);
+debug('load routes');
+app.use('/api/users', routes.users);
+app.use('/api/auth', routes.auth);
+app.use('/api/notes', routes.notes);
+app.use('/api/folders', routes.folders);
+app.use('/api/tags', routes.tags);
 
-// Mount login and refresh routes
-app.use("/api/auth", authRouter);
-
-// Mount user content resources
-app.use("/api/notes", notesRouter);
-app.use("/api/folders", foldersRouter);
-app.use("/api/tags", tagsRouter);
-
-// Custom 404 Not Found route handler
+debug('load error handlers');
 app.use((req, res, next) => {
-  const err = createError(404, "Not Found");
+  const err = createError(404, 'Not Found');
   next(err);
 });
 
-// Custom Error Handler
 app.use((err, req, res, next) => {
   // if (err instanceof createError.HttpError) {
   if (err.status) {
     const errBody = Object.assign({}, err, { message: err.message });
     res.status(err.status).json(errBody);
   } else {
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 });
 

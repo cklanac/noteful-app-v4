@@ -9,25 +9,33 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "cross-env NODE_ENV=test mocha"
+    "dev": "cross-env DEBUG=app:* nodemon server.js",
+    "test": "cross-env NODE_ENV=test mocha --timeout 5000 --bail ",
+    "cover": "nyc --reporter=lcov --reporter=text-summary npm test",
+    "seed": "cross-env DEBUG=app:seed node ./utils/generate-data.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "compression": "^1.7.3",
+    "cookie-parser": "^1.4.3",
     "cors": "^2.8.5",
     "dotenv": "^6.0.0",
     "express": "^4.16.3",
     "http-errors": "^1.7.1",
     "jsonwebtoken": "^8.3.0",
-    "mongoose": "^5.2.18",
+    "mongoose": "^5.4.4",
     "morgan": "^1.9.1",
     "passport": "^0.4.0",
     "passport-jwt": "^4.0.0",
-    "passport-local": "^1.0.0"
+    "passport-local": "^1.0.0",
+    "serve-favicon": "^2.5.0",
+    "winston": "^3.1.0"
   },
   "devDependencies": {
     "chai": "^4.2.0",
     "chai-http": "^4.2.0",
     "cross-env": "^5.1.6",
+    "faker": "^4.1.0",
     "mocha": "^5.2.0",
     "nyc": "^13.0.1",
     "sinon": "^7.1.1"

@@ -4,18 +4,18 @@
  * - Use Bcrypt to hash and compare password
  */
 
-const bcrypt = require("bcryptjs");
+const bcrypt = require('bcryptjs');
 
 /** Bcrypt using promises */
-const pwd = "baseball";
+const pwd = 'baseball';
 
 bcrypt.hash(pwd, 10)
   .then(hash => {
-    console.log("Hashed Password:", pwd, hash);
+    console.log('Hashed Password:', pwd, hash);
     return hash;
   });
 
-bcrypt.compare(pwd, "$2a$10$1IY7WTWzL4aRhE0LrOEpduBWDJ6FtN6WHcfSejSPc05De3o4Pi96u")
+bcrypt.compare(pwd, '$2a$10$1IY7WTWzL4aRhE0LrOEpduBWDJ6FtN6WHcfSejSPc05De3o4Pi96u')
   .then(valid => {
     console.log(valid);
   });

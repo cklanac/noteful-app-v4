@@ -1,44 +1,34 @@
-const mongoose = require("mongoose");
 
-const { MONGODB_URI } = require("../config");
+const { MONGODB_URI } = require('../config');
+const db = require('../db/mongoose');
 
-const Note = require("../models/note");
-const Folder = require("../models/folder");
-const Tag = require("../models/tag");
-const User = require("../models/user");
+const { Note, Folder, Tag, User } = require('../models');
 
-const { folders, notes, tags, users } = require("../db/data");
-
-mongoose.set("useNewUrlParser", true);
-mongoose.set("useFindAndModify", false);
-mongoose.set("useCreateIndex", true);
+const { folders, notes, tags, users } = require('../db/data');
 
 console.log(`Connecting to mongodb at ${MONGODB_URI}`);
-mongoose.connect(MONGODB_URI)
+db.connect(MONGODB_URI)
+  .then(() => db.connection.dropDatabase())
   .then(() => {
-    console.info("Delete Data");
-    return Promise.all([
-      Note.deleteMany(),
-      Folder.deleteMany(),
-      Tag.deleteMany(),
-      User.deleteMany()
-    ]);
-  })
-  .then(() => {
-    console.info("Seeding Database");
+    console.info('Seeding Database');
     return Promise.all([
       Note.insertMany(notes),
       Folder.insertMany(folders),
       Tag.insertMany(tags),
-      User.insertMany(users)
+      User.insertMany(users),
+
+      Note.createIndexes(),
+      Folder.createIndexes(),
+      Tag.createIndexes(),
+      User.createIndexes()
     ]);
   })
   .then(results => {
-    console.log("Inserted", results);
-    console.info("Disconnecting");
-    return mongoose.disconnect();
+    console.log('Inserted', results);
+    console.info('Disconnecting');
+    return db.disconnect();
   })
   .catch(err => {
     console.error(err);
-    return mongoose.disconnect();
+    return db.disconnect();
   });

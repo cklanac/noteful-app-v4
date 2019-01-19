@@ -1,32 +1,32 @@
-const app = require("../app");
-const chai = require("chai");
-const chaiHttp = require("chai-http");
-const mongoose = require("mongoose");
+const chai = require('chai');
+const sinon = require('sinon');
+const express = require('express');
+const jwt = require('jsonwebtoken');
+const chaiHttp = require('chai-http');
 
-const { TEST_MONGODB_URI } = require("../config");
+const app = require('../app');
+const db = require('../db/mongoose');
+const { Tag, Note, User } = require('../models');
 
-const User = require("../models/user");
+const { notes, tags, users } = require('../db/data');
+const { TEST_MONGODB_URI, JWT_SECRET } = require('../config');
 
 const expect = chai.expect;
 
-mongoose.set("useNewUrlParser", true);
-mongoose.set("useFindAndModify", false);
-mongoose.set("useCreateIndex", true);
-
 chai.use(chaiHttp);
 
-describe("Noteful API - Users", function () {
-  const username = "exampleUser";
-  const password = "examplePass";
-  const fullname = "Example User";
+describe('Noteful API - Users', function () {
+  const fullname = 'Test User';
+  const username = 'testuser';
+  const password = 'password';
 
   before(function () {
-    return mongoose.connect(TEST_MONGODB_URI, { useNewUrlParser: true })
-      .then(() => User.createIndexes());
+    return db.connect(TEST_MONGODB_URI)
+      .then(() => db.connection.dropDatabase());
   });
 
   beforeEach(function () {
-    // noop
+    return User.createIndexes();
   });
 
   afterEach(function () {
@@ -34,23 +34,23 @@ describe("Noteful API - Users", function () {
   });
 
   after(function () {
-    return mongoose.connection.db.dropDatabase()
-      .then(() => mongoose.disconnect());
+    return db.connection.dropDatabase()
+      .then(() => db.disconnect());
   });
 
-  describe("POST /api/users", function () {
+  describe('POST /api/users', function () {
 
-    it("Should create a new user", function () {
+    it('Should create a new user', function () {
       let res;
       return chai
         .request(app)
-        .post("/api/users")
+        .post('/api/users')
         .send({ username, password, fullname })
         .then(_res => {
           res = _res;
           expect(res).to.have.status(201);
-          expect(res.body).to.be.an("object");
-          expect(res.body).to.have.keys("id", "username", "fullname");
+          expect(res.body).to.be.an('object');
+          expect(res.body).to.have.keys('id', 'username', 'fullname');
           expect(res.body.id).to.exist;
           expect(res.body.username).to.equal(username);
           expect(res.body.fullname).to.equal(fullname);
@@ -67,10 +67,10 @@ describe("Noteful API - Users", function () {
         });
     });
 
-    it("Should reject users with missing username", function () {
+    it('Should reject users with missing username', function () {
       return chai
         .request(app)
-        .post("/api/users")
+        .post('/api/users')
         .send({ password, fullname })
 
         .then(res => {
@@ -79,10 +79,10 @@ describe("Noteful API - Users", function () {
         });
     });
 
-    it("Should reject users with missing password", function () {
+    it('Should reject users with missing password', function () {
       return chai
         .request(app)
-        .post("/api/users")
+        .post('/api/users')
         .send({ username, fullname })
 
         .then(res => {
@@ -91,10 +91,10 @@ describe("Noteful API - Users", function () {
         });
     });
 
-    it("Should reject users with non-string username", function () {
+    it('Should reject users with non-string username', function () {
       return chai
         .request(app)
-        .post("/api/users")
+        .post('/api/users')
         .send({ username: 1234, password, fullname })
 
         .then(res => {
@@ -103,10 +103,10 @@ describe("Noteful API - Users", function () {
         });
     });
 
-    it("Should reject users with non-string password", function () {
+    it('Should reject users with non-string password', function () {
       return chai
         .request(app)
-        .post("/api/users")
+        .post('/api/users')
         .send({ username, password: 1234, fullname })
 
         .then(res => {
@@ -115,10 +115,10 @@ describe("Noteful API - Users", function () {
         });
     });
 
-    it("Should reject users with non-trimmed username", function () {
+    it('Should reject users with non-trimmed username', function () {
       return chai
         .request(app)
-        .post("/api/users")
+        .post('/api/users')
         .send({ username: ` ${username} `, password, fullname })
 
         .then(res => {
@@ -127,10 +127,10 @@ describe("Noteful API - Users", function () {
         });
     });
 
-    it("Should reject users with non-trimmed password", function () {
+    it('Should reject users with non-trimmed password', function () {
       return chai
         .request(app)
-        .post("/api/users")
+        .post('/api/users')
         .send({ username, password: ` ${password}`, fullname })
 
         .then(res => {
@@ -139,11 +139,11 @@ describe("Noteful API - Users", function () {
         });
     });
 
-    it("Should reject users with empty username", function () {
+    it('Should reject users with empty username', function () {
       return chai
         .request(app)
-        .post("/api/users")
-        .send({ username: "", password, fullname })
+        .post('/api/users')
+        .send({ username: '', password, fullname })
 
         .then(res => {
           expect(res).to.have.status(400);
@@ -151,11 +151,11 @@ describe("Noteful API - Users", function () {
         });
     });
 
-    it("Should reject users with password less than 8 characters", function () {
+    it('Should reject users with password less than 8 characters', function () {
       return chai
         .request(app)
-        .post("/api/users")
-        .send({ username, password: "asdfghj", fullname })
+        .post('/api/users')
+        .send({ username, password: 'asdfghj', fullname })
 
         .then(res => {
           expect(res).to.have.status(400);
@@ -163,11 +163,11 @@ describe("Noteful API - Users", function () {
         });
     });
 
-    it("Should reject users with password greater than 72 characters", function () {
+    it('Should reject users with password greater than 72 characters', function () {
       return chai
         .request(app)
-        .post("/api/users")
-        .send({ username, password: new Array(73).fill("a").join(""), fullname })
+        .post('/api/users')
+        .send({ username, password: new Array(73).fill('a').join(''), fullname })
 
         .then(res => {
           expect(res).to.have.status(400);
@@ -175,7 +175,7 @@ describe("Noteful API - Users", function () {
         });
     });
 
-    it("Should reject users with duplicate username", function () {
+    it('Should reject users with duplicate username', function () {
       return User
         .create({
           username,
@@ -185,7 +185,7 @@ describe("Noteful API - Users", function () {
         .then(() => {
           return chai
             .request(app)
-            .post("/api/users")
+            .post('/api/users')
             .send({ username, password, fullname });
         })
         .then(res => {
@@ -194,15 +194,15 @@ describe("Noteful API - Users", function () {
         });
     });
 
-    it("Should trim fullname", function () {
+    it('Should trim fullname', function () {
       return chai
         .request(app)
-        .post("/api/users")
+        .post('/api/users')
         .send({ username, password, fullname: ` ${fullname} ` })
         .then(res => {
           expect(res).to.have.status(201);
-          expect(res.body).to.be.an("object");
-          expect(res.body).to.have.keys("id", "username", "fullname");
+          expect(res.body).to.be.an('object');
+          expect(res.body).to.have.keys('id', 'username', 'fullname');
           expect(res.body.fullname).to.equal(fullname);
           return User.findOne({ username });
         })
