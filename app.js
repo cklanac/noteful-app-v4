@@ -2,12 +2,11 @@ const path = require('path');
 const express = require('express');
 const compression = require('compression');
 const favicon = require('serve-favicon');
-const createError = require('http-errors');
+// const createError = require('http-errors');
 const cookieParser = require('cookie-parser');
 const debug = require('debug')('app:init');
 
-
-const { cors, logger, notFoundRouter, serverErrorRouter } = require('./middleware');
+const { cors, logger, notFound, errorHandler } = require('./middleware');
 
 const routes = require('./routes');
 
@@ -31,19 +30,7 @@ app.use('/api/folders', routes.folders);
 app.use('/api/tags', routes.tags);
 
 debug('load error handlers');
-app.use((req, res, next) => {
-  const err = createError(404, 'Not Found');
-  next(err);
-});
-
-app.use((err, req, res, next) => {
-  // if (err instanceof createError.HttpError) {
-  if (err.status) {
-    const errBody = Object.assign({}, err, { message: err.message });
-    res.status(err.status).json(errBody);
-  } else {
-    res.status(500).json({ message: 'Internal Server Error' });
-  }
-});
+app.use(notFound);
+app.use(errorHandler);
 
 module.exports = app; // Export for testing
