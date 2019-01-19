@@ -64,11 +64,8 @@ exports.remove = (id, userId) => {
   );
 
   return Promise.all([folderRemovePromise, noteRemovePromise])
-  .then( console.log);
 
 };
-
-
 
 exports.insertMany = (folders) => {
 

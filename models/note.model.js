@@ -8,26 +8,20 @@ const noteSchema = new mongoose.Schema({
   content: String,
   folderId: {
     type: mongoose.ObjectId,
-    get: id => id.toString(),
-    ref: 'Folder' },
+    // get: id => id ? id.toString() : id,
+    ref: 'Folder'
+  },
   tags: [{
     type: mongoose.ObjectId,
-    get: id => id.toString(),
     ref: 'Tag'
   }],
   userId: {
     type: mongoose.ObjectId,
-    get: id => id.toString(),
+    // get: id => id ? id.toString() : id,
     ref: 'User',
     required: true
   }
 });
-
-// mongoose.ObjectId.get(v => v.toString());
-// mongoose.ObjectId.get(id => {
-//   console.log(id);
-//   return id ? id.toString() : id;
-// });
 
 noteSchema.set('timestamps', true);
 

@@ -6,8 +6,7 @@ mongoose.set('useNewUrlParser', true);
 mongoose.set('useFindAndModify', false);
 mongoose.set('useCreateIndex', true);
 
-// mongoose.ObjectId.get(v => v.toString());
-mongoose.ObjectId.get(id => id ? id.toString() : id);
+mongoose.ObjectId.get(v => v.toString());
 
 const serialize = {
   virtuals: true,
