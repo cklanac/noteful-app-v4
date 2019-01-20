@@ -246,7 +246,7 @@ describe('Noteful API - Tags', function () {
           expect(res).to.have.status(409);
           expect(res).to.be.json;
           expect(res.body).to.be.a('object');
-          expect(res.body.message).to.equal(`Resource '${data.name}' must be unique`);
+          expect(res.body.message).to.equal('Resource must be unique');
         });
     });
 
@@ -372,7 +372,7 @@ describe('Noteful API - Tags', function () {
           expect(res).to.have.status(409);
           expect(res).to.be.json;
           expect(res.body).to.be.a('object');
-          expect(res.body.message).to.equal(`Resource '${data[1].name}' must be unique`);
+          expect(res.body.message).to.equal('Resource must be unique');
         });
     });
 

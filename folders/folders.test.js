@@ -239,7 +239,7 @@ describe('Noteful API - Folders', function () {
           expect(res).to.have.status(409);
           expect(res).to.be.json;
           expect(res.body).to.be.a('object');
-          expect(res.body.message).to.equal(`Resource '${data.name}' must be unique`);
+          expect(res.body.message).to.equal('Resource must be unique');
         });
     });
 
@@ -364,7 +364,7 @@ describe('Noteful API - Folders', function () {
           expect(res).to.have.status(409);
           expect(res).to.be.json;
           expect(res.body).to.be.a('object');
-          expect(res.body.message).to.equal(`Resource '${data[1].name}' must be unique`);
+          expect(res.body.message).to.equal('Resource must be unique');
         });
     });
 
@@ -390,7 +390,7 @@ describe('Noteful API - Folders', function () {
 
   });
 
-  describe('DELETE /api/folders/:id', function () {
+  describe.only('DELETE /api/folders/:id', function () {
 
     it('should delete an existing folder and respond with 204', function () {
       let data;

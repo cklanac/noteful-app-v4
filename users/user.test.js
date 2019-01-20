@@ -5,7 +5,7 @@ const app = require('../app');
 const db = require('../db/mongoose');
 
 const UserModel = require('./user.model');
-const { TEST_MONGODB_URI} = require('../config');
+const { TEST_MONGODB_URI } = require('../config');
 
 const expect = chai.expect;
 
@@ -185,7 +185,7 @@ describe('Noteful API - Users', function () {
         })
         .then(res => {
           expect(res).to.have.status(409);
-          expect(res.body.message).to.equal(`Resource '${username}' must be unique`);
+          expect(res.body.message).to.equal('Resource must be unique');
         });
     });
 
