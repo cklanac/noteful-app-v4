@@ -628,7 +628,6 @@ describe('Noteful API - Notes', function () {
     it('should update the note when provided a valid tag', function () {
       const updateItem = { tags: [] };
       let data;
-      const assert = require('assert');
       return Promise.all([
         TagModel.findOne({ userId: user.id }),
         NoteModel.findOne({ userId: user.id })

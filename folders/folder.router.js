@@ -3,7 +3,6 @@ const createError = require('http-errors');
 const debug = require('debug')('app:routes');
 
 const { jwtAuth } = require('../middleware');
-
 const folderService = require('./folder.service');
 
 const router = express.Router();

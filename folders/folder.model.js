@@ -7,7 +7,6 @@ const folderSchema = new mongoose.Schema({
   name: { type: String, required: true },
   userId: {
     type: mongoose.ObjectId,
-    // get: id => id ? id.toString() : id,
     ref: 'User',
     required: true }
 });
