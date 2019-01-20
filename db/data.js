@@ -158,16 +158,16 @@ const tags = [
 const users = [
   {
     _id: '000000000000000000000001',
-    fullname: 'Ana User',
-    username: 'anauser',
-    password: '$2a$10$O4tYSlkzFykwKYIXIaKFXOjKYzfrwjSZmOak50rMpzhWW/aKHA06a' // "password"
+    fullname: 'Sherlock Holmes',
+    username: 'sherlock',
+    password: '$2a$10$QJCIX42iD5QMxLRgHHBJre2rH6c6nI24UysmSYtkmeFv6X8uS1kgi'
   },
   {
     _id: '000000000000000000000002',
-    fullname: 'Bob User',
-    username: 'bobuser',
-    password: '$2a$10$vXjjefbggXMi5S9130.Zu.AMcQoh2TqikDOmKn/7B6hpW6l8gX56W' // "baseball"
-  },
+    fullname: 'Dr. James Watson',
+    username: 'watson',
+    password: '$2a$10$QJCIX42iD5QMxLRgHHBJre2rH6c6nI24UysmSYtkmeFv6X8uS1kgi'
+  }
 ];
 
 module.exports = { folders, notes, tags, users };

@@ -6,8 +6,8 @@ const mongoose = require('mongoose');
 // ===== Define UserSchema & UserModel =====
 const schema = new mongoose.Schema({
   fullname: { type: String, default: '' },
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true }
+  username: { type: String, required: true, unique: true, lowercase: true, trim: true },
+  password: { type: String, required: true, min: 8, max: 72 }
 });
 
 // Transform output during `res.json(data)`, `console.log(data)` etc.
