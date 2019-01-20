@@ -21,6 +21,7 @@
     "cors": "^2.8.5",
     "dotenv": "^6.0.0",
     "express": "^4.16.3",
+    "helmet": "^3.15.0",
     "http-errors": "^1.7.1",
     "jsonwebtoken": "^8.3.0",
     "mongoose": "^5.4.4",
