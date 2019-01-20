@@ -168,7 +168,7 @@ exports.remove = (id, userId) => {
     return Promise.reject(err);
   }
 
-  return Note.findOneAndDelete({ _id: id, userId });
+  return Note.deleteOne({ _id: id, userId });
 
 };
 

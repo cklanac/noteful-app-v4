@@ -1,4 +1,3 @@
-const createError = require('http-errors');
 const folderService = require('./folder.service');
 
 exports.findAll = (req, res, next) => {
@@ -61,7 +60,6 @@ exports.modify = (req, res, next) => {
     });
 };
 
-/* ========== DELETE/REMOVE A SINGLE ITEM ========== */
 exports.remove = (req, res, next) => {
   const { id } = req.params;
   const userId = req.user.id;

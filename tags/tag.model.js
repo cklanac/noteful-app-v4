@@ -1,3 +1,5 @@
+// Mongoose Model and Schema defines document and creates model
+
 const mongoose = require('mongoose');
 const debug = require('debug')('app:models');
 

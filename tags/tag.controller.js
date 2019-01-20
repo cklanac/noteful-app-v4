@@ -1,9 +1,9 @@
-const createError = require('http-errors');
+// Maps request to service and handles response
+
 const tagService = require('./tag.service');
 
 exports.findAll = (req, res, next) => {
   const userId = req.user.id;
-
   tagService.findAll(userId)
     .then(results => {
       res.json(results);

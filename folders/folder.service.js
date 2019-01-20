@@ -42,7 +42,7 @@ exports.remove = (id, userId) => {
     const err = createError(400, "Field 'id' must be a Mongo ObjectId");
     return Promise.reject(err);
   }
-  const folderRemovePromise = Folder.findOneAndDelete({ _id: id, userId });
+  const folderRemovePromise = Folder.deleteOne({ _id: id, userId });
   const noteRemovePromise = Note.updateMany(
     { folderId: id, userId },
     { $unset: { folderId: '' } }

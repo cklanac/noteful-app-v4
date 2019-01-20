@@ -1,18 +1,21 @@
-const express = require('express');
-const { jwtAuth } = require('../middleware');
 const controller = require('./folder.controller');
+module.exports = require('../resource-router')(controller);
 
-const router = express.Router();
+// const express = require('express');
+// const { jwtAuth } = require('../middleware');
+// const controller = require('./folder.controller');
 
-router.use(jwtAuth);
+// const router = express.Router();
 
-router.route('/')
-  .get(controller.findAll)
-  .post(controller.insert);
+// router.use(jwtAuth);
 
-router.route('/:id')
-  .get(controller.findOne)
-  .put(controller.modify)
-  .delete(controller.remove);
+// router.route('/')
+//   .get(controller.findAll)
+//   .post(controller.insert);
 
-module.exports = router;
+// router.route('/:id')
+//   .get(controller.findOne)
+//   .put(controller.modify)
+//   .delete(controller.remove);
+
+// module.exports = router;

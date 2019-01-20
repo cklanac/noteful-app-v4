@@ -390,7 +390,7 @@ describe('Noteful API - Folders', function () {
 
   });
 
-  describe.only('DELETE /api/folders/:id', function () {
+  describe('DELETE /api/folders/:id', function () {
 
     it('should delete an existing folder and respond with 204', function () {
       let data;

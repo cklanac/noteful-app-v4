@@ -1,3 +1,5 @@
+// concerned about starting the express app and database
+
 const http = require('http');
 const app = require('./app');
 const db = require('./db/mongoose');

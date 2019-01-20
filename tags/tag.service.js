@@ -1,3 +1,5 @@
+// Creates a common interface for database calls
+
 const mongoose = require('mongoose');
 const createError = require('http-errors');
 
@@ -43,7 +45,7 @@ exports.remove = (tagId, userId) => {
     const err = createError(400, "Field 'id' must be a Mongo ObjectId");
     return Promise.reject(err);
   }
-  const tagRemovePromise = TagModel.findOneAndDelete({ _id: tagId, userId });
+  const tagRemovePromise = TagModel.deleteOne({ _id: tagId, userId });
   const noteRemovePromise = NoteModel.updateMany(
     { tags: tagId, userId },
     { $unset: { tags: '' } }
