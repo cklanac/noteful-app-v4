@@ -1,5 +1,5 @@
 // Clear the console before each run
-// process.stdout.write("\x1Bc\n");
+process.stdout.write('\x1Bc\n');
 
 const chai = require('chai');
 const chaiHttp = require('chai-http');

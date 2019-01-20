@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const createError = require('http-errors');
 const debug = require('debug')('app:auth:local');
 
-const User = require('../models/user.model');
+const User = require('../users/user.model');
 
 function localAuth(req, res, next) {
   const { username, password } = req.body;

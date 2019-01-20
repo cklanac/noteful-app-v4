@@ -1,13 +1,13 @@
 const chai = require('chai');
-const sinon = require('sinon');
-const express = require('express');
+// const sinon = require('sinon');
+// const express = require('express');
 const jwt = require('jsonwebtoken');
 const chaiHttp = require('chai-http');
 
 const app = require('../app');
 const db = require('../db/mongoose');
 
-const { User } = require('../models');
+const { UserModel } = require('../users');
 const { TEST_MONGODB_URI, JWT_SECRET } = require('../config');
 
 chai.use(chaiHttp);
@@ -26,8 +26,8 @@ describe('Noteful API - Login', function () {
   });
 
   beforeEach(function () {
-    return User.hashPassword(password)
-      .then(digest => User.create({
+    return UserModel.hashPassword(password)
+      .then(digest => UserModel.create({
         fullname,
         username,
         password: digest
@@ -35,7 +35,7 @@ describe('Noteful API - Login', function () {
   });
 
   afterEach(function () {
-    return User.deleteMany();
+    return UserModel.deleteMany();
   });
 
   after(function () {

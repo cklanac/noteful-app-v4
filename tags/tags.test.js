@@ -6,9 +6,12 @@ const chaiHttp = require('chai-http');
 
 const app = require('../app');
 const db = require('../db/mongoose');
-const { Tag, Note, User } = require('../models');
+const data = require('../db/test-data');
 
-const { notes, tags, users } = require('../db/data');
+const TagModel = require('./tag.model');
+const { NoteModel } = require('../notes');
+const { UserModel } = require('../users');
+
 const { TEST_MONGODB_URI, JWT_SECRET } = require('../config');
 
 chai.use(chaiHttp);
@@ -26,10 +29,10 @@ describe('Noteful API - Tags', function () {
 
   beforeEach(function () {
     return Promise.all([
-      User.insertMany(users),
-      Tag.insertMany(tags),
-      Note.insertMany(notes),
-      Tag.createIndexes(),
+      UserModel.insertMany(data.users),
+      TagModel.insertMany(data.tags),
+      NoteModel.insertMany(data.notes),
+      TagModel.createIndexes(),
     ])
       .then(([users]) => {
         user = users[0];
@@ -40,9 +43,9 @@ describe('Noteful API - Tags', function () {
   afterEach(function () {
     sandbox.restore();
     return Promise.all([
-      Note.deleteMany(),
-      Tag.deleteMany(),
-      User.deleteMany()
+      NoteModel.deleteMany(),
+      TagModel.deleteMany(),
+      UserModel.deleteMany()
     ]);
   });
 
@@ -55,7 +58,7 @@ describe('Noteful API - Tags', function () {
 
     it('should return the correct number of tags', function () {
       return Promise.all([
-        Tag.find({ userId: user.id }),
+        TagModel.find({ userId: user.id }),
         chai.request(app)
           .get('/api/tags')
           .set('Authorization', `Bearer ${token}`)
@@ -70,7 +73,7 @@ describe('Noteful API - Tags', function () {
 
     it('should return a list sorted by name with the correct fields and values', function () {
       return Promise.all([
-        Tag.find({ userId: user.id }),
+        TagModel.find({ userId: user.id }),
         chai.request(app)
           .get('/api/tags')
           .set('Authorization', `Bearer ${token}`)
@@ -112,7 +115,7 @@ describe('Noteful API - Tags', function () {
 
     it('should return correct tags', function () {
       let data;
-      return Tag.findOne({ userId: user.id })
+      return TagModel.findOne({ userId: user.id })
         .then(_data => {
           data = _data;
           return chai.request(app)
@@ -143,7 +146,7 @@ describe('Noteful API - Tags', function () {
     });
 
     it('should respond with a 404 for an id that does not exist', function () {
-      // The string "DOESNOTEXIST" is 12 bytes which is a valid Mongo ObjectId
+
       return chai.request(app)
         .get('/api/tags/DOESNOTEXIST')
         .set('Authorization', `Bearer ${token}`)
@@ -155,7 +158,7 @@ describe('Noteful API - Tags', function () {
     it('should catch errors and respond properly', function () {
       sandbox.stub(db.get('toJSON'), 'transform').throws();
 
-      return Tag.findOne()
+      return TagModel.findOne()
         .then(data => {
           return chai.request(app)
             .get(`/api/tags/${data.id}`)
@@ -188,7 +191,7 @@ describe('Noteful API - Tags', function () {
           expect(res).to.be.json;
           expect(body).to.be.a('object');
           expect(body).to.have.keys('id', 'name', 'createdAt', 'updatedAt', 'userId');
-          return Tag.findOne({ userId: user.id, _id: body.id });
+          return TagModel.findOne({ userId: user.id, _id: body.id });
         })
         .then(data => {
           expect(body.id).to.equal(data.id);
@@ -230,7 +233,7 @@ describe('Noteful API - Tags', function () {
 
     it('should return an error when given a duplicate name', function () {
       let data;
-      return Tag.findOne({ userId: user.id })
+      return TagModel.findOne({ userId: user.id })
         .then(_data => {
           data = _data;
           const newItem = { name: data.name };
@@ -270,7 +273,7 @@ describe('Noteful API - Tags', function () {
     it('should update the tag', function () {
       const updateItem = { name: 'Updated Name' };
       let data;
-      return Tag.findOne({ userId: user.id })
+      return TagModel.findOne({ userId: user.id })
         .then(_data => {
           data = _data;
           return chai.request(app)
@@ -287,7 +290,6 @@ describe('Noteful API - Tags', function () {
           expect(res.body.name).to.equal(updateItem.name);
           expect(res.body.userId).to.equal(data.userId.toString());
           expect(new Date(res.body.createdAt)).to.eql(data.createdAt);
-          // expect item to have been updated
           expect(new Date(res.body.updatedAt)).to.greaterThan(data.updatedAt);
         });
     });
@@ -307,7 +309,6 @@ describe('Noteful API - Tags', function () {
 
     it('should respond with a 404 for an id that does not exist', function () {
       const updateItem = { name: 'Blah' };
-      // The string "DOESNOTEXIST" is 12 bytes which is a valid Mongo ObjectId
       return chai.request(app)
         .put('/api/tags/DOESNOTEXIST')
         .set('Authorization', `Bearer ${token}`)
@@ -320,7 +321,7 @@ describe('Noteful API - Tags', function () {
     it('should return an error when missing "name" field', function () {
       const updateItem = {};
       let data;
-      return Tag.findOne({ userId: user.id })
+      return TagModel.findOne({ userId: user.id })
         .then(_data => {
           data = _data;
           return chai.request(app)
@@ -339,7 +340,7 @@ describe('Noteful API - Tags', function () {
     it('should return an error when "name" field is empty string', function () {
       const updateItem = { name: '' };
       let data;
-      return Tag.findOne()
+      return TagModel.findOne()
         .then(_data => {
           data = _data;
           return chai.request(app)
@@ -357,7 +358,7 @@ describe('Noteful API - Tags', function () {
 
     it('should return an error when given a duplicate name', function () {
       let data;
-      return Tag.find({ userId: user.id }).limit(2)
+      return TagModel.find({ userId: user.id }).limit(2)
         .then(_data => {
           data = _data;
           const [item1, item2] = data;
@@ -379,7 +380,7 @@ describe('Noteful API - Tags', function () {
       sandbox.stub(db.get('toJSON'), 'transform').throws();
 
       const updateItem = { name: 'Updated Name' };
-      return Tag.findOne()
+      return TagModel.findOne()
         .then(data => {
           return chai.request(app)
             .put(`/api/tags/${data.id}`)
@@ -400,7 +401,7 @@ describe('Noteful API - Tags', function () {
 
     it('should delete an existing tag and respond with 204', function () {
       let data;
-      return Tag.findOne({ userId: user.id })
+      return TagModel.findOne({ userId: user.id })
         .then(_data => {
           data = _data;
           return chai.request(app)
@@ -410,7 +411,7 @@ describe('Noteful API - Tags', function () {
         .then(function (res) {
           expect(res).to.have.status(204);
           expect(res.body).to.be.empty;
-          return Tag.countDocuments({ _id: data.id });
+          return TagModel.countDocuments({ _id: data.id });
         })
         .then(count => {
           expect(count).to.equal(0);
@@ -419,7 +420,7 @@ describe('Noteful API - Tags', function () {
 
     it('should delete an existing tag and remove tag reference from note', function () {
       let tagId;
-      return Note.findOne({ tags: { $exists: true, $ne: [] } })
+      return NoteModel.findOne({ tags: { $exists: true, $ne: [] } })
         .then(data => {
           tagId = data.tags[0];
 
@@ -430,7 +431,7 @@ describe('Noteful API - Tags', function () {
         .then(function (res) {
           expect(res).to.have.status(204);
           expect(res.body).to.be.empty;
-          return Note.countDocuments({ tags: tagId });
+          return NoteModel.countDocuments({ tags: tagId });
         })
         .then(count => {
           expect(count).to.equal(0);
@@ -450,7 +451,7 @@ describe('Noteful API - Tags', function () {
     it('should catch errors and respond properly', function () {
       sandbox.stub(express.response, 'sendStatus').throws();
 
-      return Tag.findOne()
+      return TagModel.findOne()
         .then(data => {
           return chai.request(app)
             .delete(`/api/tags/${data.id}`)

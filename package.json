@@ -9,10 +9,10 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "cross-env DEBUG=app:* nodemon server.js",
-    "test": "cross-env NODE_ENV=test mocha --timeout 5000 --bail ",
+    "dev": "nodemon server.js",
+    "test": "NODE_ENV=test mocha --bail --exclude './node_modules/**' './**/*.test.js'",
     "cover": "nyc --reporter=lcov --reporter=text-summary npm test",
-    "seed": "cross-env DEBUG=app:seed node ./utils/generate-data.js"
+    "seed": "node ./utils/generate-data.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

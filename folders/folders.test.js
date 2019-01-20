@@ -5,9 +5,12 @@ const jwt = require('jsonwebtoken');
 const chaiHttp = require('chai-http');
 
 const app = require('../app');
-const data = require('./data');
 const db = require('../db/mongoose');
-const { Folder, User, Note } = require('../models');
+const data = require('../db/test-data');
+
+const FolderModel = require('./folder.model');
+const { NoteModel } = require('../notes');
+const { UserModel } = require('../users');
 
 const { TEST_MONGODB_URI, JWT_SECRET } = require('../config');
 
@@ -26,10 +29,10 @@ describe('Noteful API - Folders', function () {
 
   beforeEach(function () {
     return Promise.all([
-      User.insertMany(data.users),
-      Folder.insertMany(data.folders),
-      Note.insertMany(data.notes),
-      Folder.createIndexes()
+      UserModel.insertMany(data.users),
+      FolderModel.insertMany(data.folders),
+      NoteModel.insertMany(data.notes),
+      FolderModel.createIndexes()
     ])
       .then(([users]) => {
         user = users[0];
@@ -40,9 +43,9 @@ describe('Noteful API - Folders', function () {
   afterEach(function () {
     sandbox.restore();
     return Promise.all([
-      Note.deleteMany(),
-      Folder.deleteMany(),
-      User.deleteMany()
+      NoteModel.deleteMany(),
+      FolderModel.deleteMany(),
+      UserModel.deleteMany()
     ]);
   });
 
@@ -55,7 +58,7 @@ describe('Noteful API - Folders', function () {
 
     it('should return a list sorted with the correct number of folders', function () {
       return Promise.all([
-        Folder.find({ userId: user.id }).sort('name'),
+        FolderModel.find({ userId: user.id }).sort('name'),
         chai.request(app).get('/api/folders')
           .set('Authorization', `Bearer ${token}`)
       ])
@@ -69,7 +72,7 @@ describe('Noteful API - Folders', function () {
 
     it('should return a list sorted by name with the correct fields and values', function () {
       return Promise.all([
-        Folder.find({ userId: user.id }).sort('name'),
+        FolderModel.find({ userId: user.id }).sort('name'),
         chai.request(app).get('/api/folders')
           .set('Authorization', `Bearer ${token}`)
       ])
@@ -108,7 +111,7 @@ describe('Noteful API - Folders', function () {
 
     it('should return correct folder', function () {
       let data;
-      return Folder.findOne({ userId: user.id })
+      return FolderModel.findOne({ userId: user.id })
         .then(_data => {
           data = _data;
           return chai.request(app).get(`/api/folders/${data.id}`)
@@ -138,7 +141,6 @@ describe('Noteful API - Folders', function () {
     });
 
     it('should respond with a 404 for an id that does not exist', function () {
-      // The string "DOESNOTEXIST" is 12 bytes which is a valid Mongo ObjectId
       return chai.request(app)
         .get('/api/folders/DOESNOTEXIST')
         .set('Authorization', `Bearer ${token}`)
@@ -151,7 +153,7 @@ describe('Noteful API - Folders', function () {
       sandbox.stub(db.get('toJSON'), 'transform').throws();
       let data;
 
-      return Folder.findOne()
+      return FolderModel.findOne()
         .then(_data => {
           data = _data;
           return chai.request(app).get(`/api/folders/${data.id}`)
@@ -183,7 +185,7 @@ describe('Noteful API - Folders', function () {
           expect(res).to.be.json;
           expect(body).to.be.a('object');
           expect(body).to.have.all.keys('id', 'name', 'userId', 'createdAt', 'updatedAt');
-          return Folder.findOne({ _id: body.id, userId: user.id });
+          return FolderModel.findOne({ _id: body.id, userId: user.id });
         })
         .then(data => {
           expect(body.id).to.equal(data.id);
@@ -224,7 +226,7 @@ describe('Noteful API - Folders', function () {
 
     it('should return an error when given a duplicate name', function () {
       let data;
-      return Folder.findOne({ userId: user.id })
+      return FolderModel.findOne({ userId: user.id })
         .then(_data => {
           data = _data;
           const newItem = { name: data.name };
@@ -264,7 +266,7 @@ describe('Noteful API - Folders', function () {
     it('should update the folder', function () {
       const updateItem = { name: 'Updated Name' };
       let data;
-      return Folder.findOne({ userId: user.id })
+      return FolderModel.findOne({ userId: user.id })
         .then(_data => {
           data = _data;
           return chai.request(app)
@@ -281,7 +283,6 @@ describe('Noteful API - Folders', function () {
           expect(res.body.name).to.equal(updateItem.name);
           expect(res.body.userId).to.equal(data.userId.toString());
           expect(new Date(res.body.createdAt)).to.eql(data.createdAt);
-          // expect item to have been updated
           expect(new Date(res.body.updatedAt)).to.greaterThan(data.updatedAt);
         });
     });
@@ -300,7 +301,6 @@ describe('Noteful API - Folders', function () {
 
     it('should respond with a 404 for an id that does not exist', function () {
       const updateItem = { name: 'Blah' };
-      // The string "DOESNOTEXIST" is 12 bytes which is a valid Mongo ObjectId
       return chai.request(app)
         .put('/api/folders/DOESNOTEXIST')
         .set('Authorization', `Bearer ${token}`)
@@ -313,7 +313,7 @@ describe('Noteful API - Folders', function () {
     it('should return an error when missing "name" field', function () {
       const updateItem = {};
       let data;
-      return Folder.findOne({ userId: user.id })
+      return FolderModel.findOne({ userId: user.id })
         .then(_data => {
           data = _data;
           return chai.request(app)
@@ -332,7 +332,7 @@ describe('Noteful API - Folders', function () {
     it('should return an error when "name" field is empty string', function () {
       const updateItem = { name: '' };
       let data;
-      return Folder.findOne()
+      return FolderModel.findOne()
         .then(_data => {
           data = _data;
           return chai.request(app)
@@ -350,7 +350,7 @@ describe('Noteful API - Folders', function () {
 
     it('should return an error when given a duplicate name', function () {
       let data;
-      return Folder.find({ userId: user.id }).limit(2)
+      return FolderModel.find({ userId: user.id }).limit(2)
         .then(_data => {
           data = _data;
           const [item1, item2] = data;
@@ -373,7 +373,7 @@ describe('Noteful API - Folders', function () {
 
       const updateItem = { name: 'Updated Name' };
       let data;
-      return Folder.findOne()
+      return FolderModel.findOne()
         .then(_data => {
           data = _data;
           return chai.request(app).put(`/api/folders/${data.id}`)
@@ -394,7 +394,7 @@ describe('Noteful API - Folders', function () {
 
     it('should delete an existing folder and respond with 204', function () {
       let data;
-      return Folder.findOne({ userId: user.id })
+      return FolderModel.findOne({ userId: user.id })
         .then(_data => {
           data = _data;
           return chai.request(app)
@@ -404,7 +404,7 @@ describe('Noteful API - Folders', function () {
         .then(function (res) {
           expect(res).to.have.status(204);
           expect(res.body).to.be.empty;
-          return Folder.countDocuments({ _id: data.id });
+          return FolderModel.countDocuments({ _id: data.id });
         })
         .then(count => {
           expect(count).to.equal(0);
@@ -413,7 +413,7 @@ describe('Noteful API - Folders', function () {
 
     it('should delete an existing folder and remove folderId reference from note', function () {
       let folderId;
-      return Note.findOne({ userId: user.id, folderId: { $exists: true } })
+      return NoteModel.findOne({ userId: user.id, folderId: { $exists: true } })
         .then(data => {
           folderId = data.folderId;
           return chai.request(app)
@@ -423,7 +423,7 @@ describe('Noteful API - Folders', function () {
         .then(function (res) {
           expect(res).to.have.status(204);
           expect(res.body).to.be.empty;
-          return Note.countDocuments({ folderId });
+          return NoteModel.countDocuments({ folderId });
         })
         .then(count => {
           expect(count).to.equal(0);
@@ -443,7 +443,7 @@ describe('Noteful API - Folders', function () {
     it('should catch errors and respond properly', function () {
       sandbox.stub(express.response, 'sendStatus').throws();
 
-      return Folder.findOne()
+      return FolderModel.findOne()
         .then(data => {
           return chai.request(app)
             .delete(`/api/folders/${data.id}`)

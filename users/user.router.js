@@ -2,7 +2,7 @@ const express = require('express');
 const createError = require('http-errors');
 const debug = require('debug')('app:routes');
 
-const { user } = require('../services');
+const userService = require('./user.service');
 
 const router = express.Router();
 
@@ -77,7 +77,7 @@ router.post('/', (req, res, next) => {
   let { username, password, fullname = '' } = req.body;
   fullname = fullname.trim();
 
-  return user.insert({ username, password, fullname })
+  return userService.insert({ username, password, fullname })
     .then(result => {
       return res.status(201).location(`/api/users/${result.id}`).json(result);
     })

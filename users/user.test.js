@@ -1,15 +1,11 @@
 const chai = require('chai');
-const sinon = require('sinon');
-const express = require('express');
-const jwt = require('jsonwebtoken');
 const chaiHttp = require('chai-http');
 
 const app = require('../app');
 const db = require('../db/mongoose');
-const { Tag, Note, User } = require('../models');
 
-const { notes, tags, users } = require('../db/data');
-const { TEST_MONGODB_URI, JWT_SECRET } = require('../config');
+const UserModel = require('./user.model');
+const { TEST_MONGODB_URI} = require('../config');
 
 const expect = chai.expect;
 
@@ -26,11 +22,11 @@ describe('Noteful API - Users', function () {
   });
 
   beforeEach(function () {
-    return User.createIndexes();
+    return UserModel.createIndexes();
   });
 
   afterEach(function () {
-    return User.deleteMany();
+    return UserModel.deleteMany();
   });
 
   after(function () {
@@ -54,7 +50,7 @@ describe('Noteful API - Users', function () {
           expect(res.body.id).to.exist;
           expect(res.body.username).to.equal(username);
           expect(res.body.fullname).to.equal(fullname);
-          return User.findOne({ username });
+          return UserModel.findOne({ username });
         })
         .then(user => {
           expect(user).to.exist;
@@ -176,12 +172,11 @@ describe('Noteful API - Users', function () {
     });
 
     it('Should reject users with duplicate username', function () {
-      return User
-        .create({
-          username,
-          password,
-          fullname
-        })
+      return UserModel.create({
+        username,
+        password,
+        fullname
+      })
         .then(() => {
           return chai
             .request(app)
@@ -204,7 +199,7 @@ describe('Noteful API - Users', function () {
           expect(res.body).to.be.an('object');
           expect(res.body).to.have.keys('id', 'username', 'fullname');
           expect(res.body.fullname).to.equal(fullname);
-          return User.findOne({ username });
+          return UserModel.findOne({ username });
         })
         .then(user => {
           expect(user).to.not.be.null;

@@ -6,7 +6,12 @@ const compression = require('compression');
 const cookieParser = require('cookie-parser');
 const debug = require('debug')('app:init');
 
-const routes = require('./routes');
+const { authRouter } = require('./auth');
+const { folderRouter } = require('./folders');
+const { noteRouter } = require('./notes');
+const { tagRouter } = require('./tags');
+const { userRouter } = require('./users');
+
 const { cors, logger, notFound, errorHandler } = require('./middleware');
 
 debug('initialize express');
@@ -25,11 +30,11 @@ app.use(express.json());
 app.use(cookieParser());
 
 debug('load routes');
-app.use('/api/users', routes.users);
-app.use('/api/auth', routes.auth);
-app.use('/api/notes', routes.notes);
-app.use('/api/folders', routes.folders);
-app.use('/api/tags', routes.tags);
+app.use('/api/auth', authRouter);
+app.use('/api/folders', folderRouter);
+app.use('/api/notes', noteRouter);
+app.use('/api/users', userRouter);
+app.use('/api/tags', tagRouter);
 
 debug('load error handlers');
 app.use(notFound);

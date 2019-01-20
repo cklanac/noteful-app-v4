@@ -3,10 +3,10 @@ const createError = require('http-errors');
 const debug = require('debug')('app:routes');
 
 const { jwtAuth } = require('../middleware');
-const { folder } = require('../services');
+
+const folderService = require('./folder.service');
 
 const router = express.Router();
-
 router.use(jwtAuth);
 
 /* ========== GET/READ ALL ITEMS ========== */
@@ -14,7 +14,7 @@ router.get('/', (req, res, next) => {
   debug(req.originalUrl);
   const userId = req.user.id;
 
-  folder.findAll(userId)
+  folderService.findAll(userId)
     .then(results => {
       res.json(results);
     })
@@ -29,7 +29,7 @@ router.get('/:id', (req, res, next) => {
   const { id } = req.params;
   const userId = req.user.id;
 
-  folder.findOne(id, userId)
+  folderService.findOne(id, userId)
     .then(result => {
       if (result) {
         res.json(result);
@@ -48,7 +48,7 @@ router.post('/', (req, res, next) => {
   const { name } = req.body;
   const userId = req.user.id;
 
-  folder.insert(name, userId)
+  folderService.insert(name, userId)
     .then(result => {
       res.location(`${req.originalUrl}/${result.id}`).status(201).json(result);
     })
@@ -67,7 +67,7 @@ router.put('/:id', (req, res, next) => {
   const { name } = req.body;
   const userId = req.user.id;
 
-  folder.modify(id, userId, { name })
+  folderService.modify(id, userId, { name })
     .then(result => {
       if (result) {
         res.json(result);
@@ -89,7 +89,7 @@ router.delete('/:id', (req, res, next) => {
   const { id } = req.params;
   const userId = req.user.id;
 
-  folder.remove(id, userId)
+  folderService.remove(id, userId)
     .then(() => {
       res.sendStatus(204);
     })

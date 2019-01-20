@@ -1,56 +1,59 @@
 const mongoose = require('mongoose');
 const createError = require('http-errors');
 
-const Tag = require('../models/tag.model');
-const Note = require('../models/note.model');
-const Folder = require('../models/folder.model');
+const Tag = require('../tags/tag.model');
+const Note = require('../notes/note.model');
+const FolderModel = require('../folders/folder.model');
 
-function validateFolderId(folderId, userId) {
-
-  if (folderId === '') {
+const validateFolderId = (folderId, userId) => {
+  return new Promise((resolve, reject) => {
     const err = createError(400, 'The `folderId` is not valid');
-    return Promise.reject(err);
-  }
-
-  if (folderId) {
-    if (!mongoose.Types.ObjectId.isValid(folderId)) {
-      const err = createError(400, 'The `folderId` is not valid');
-      return Promise.reject(err);
-    } else {
-      return Folder.countDocuments({ _id: folderId, userId })
-        .then(count => {
-          if (count === 0) {
-            const err = createError(400, 'The `folderId` is not valid');
-            return Promise.reject(err);
-          }
-        });
+    if (folderId === undefined || folderId === '') {
+      return resolve();
     }
-  }
-}
+
+    if (folderId && !mongoose.Types.ObjectId.isValid(folderId)) {
+      return reject(err);
+    }
+
+    FolderModel.countDocuments({ _id: folderId, userId })
+      .then(count => {
+        if (count === 0) {
+          return reject(err);
+        } else {
+          resolve();
+        }
+      });
+  });
+};
 
 function validateTagIds(tags, userId) {
-  if (tags === undefined) {
-    return Promise.resolve();
-  }
+  return new Promise((resolve, reject) => {
+    if (tags === undefined) {
+      return resolve();
+    }
 
-  if (!Array.isArray(tags)) {
-    const err = createError(400, 'The `tags` property must be an array');
-    return Promise.reject(err);
-  }
+    if (!Array.isArray(tags)) {
+      const err = createError(400, 'The `tags` property must be an array');
+      return reject(err);
+    }
 
-  const badIds = tags.filter((tag) => !mongoose.Types.ObjectId.isValid(tag));
-  if (badIds.length) {
-    const err = createError(400, 'The `tags` array contains an invalid `id`');
-    return Promise.reject(err);
-  }
+    const badIds = tags.filter((tag) => !mongoose.Types.ObjectId.isValid(tag));
+    if (badIds.length) {
+      const err = createError(400, 'The `tags` array contains an invalid `id`');
+      return reject(err);
+    }
 
-  return Tag.find({ $and: [{ _id: tags, userId }] })
-    .then(results => {
-      if (tags.length !== results.length) {
-        const err = createError(400, 'The `tags` array contains an invalid `id`');
-        return Promise.reject(err);
-      }
-    });
+    return Tag.find({ $and: [{ _id: tags, userId }] })
+      .then(results => {
+        if (tags.length !== results.length) {
+          const err = createError(400, 'The `tags` array contains an invalid `id`');
+          return reject(err);
+        } else {
+          resolve(results);
+        }
+      });
+  });
 }
 
 exports.findAll = (userId, query = {}) => {
@@ -96,7 +99,7 @@ exports.findNoteWithTags = (userId) => {
 
 exports.countDocuments = (query) => {
 
-  return Note.countDocuments( query);
+  return Note.countDocuments(query);
 
 };
 

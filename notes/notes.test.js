@@ -5,10 +5,13 @@ const jwt = require('jsonwebtoken');
 const chaiHttp = require('chai-http');
 
 const app = require('../app');
-const data = require('./data');
 const db = require('../db/mongoose');
+const data = require('../db/test-data');
 
-const { Tag, Note, Folder, User } = require('../models');
+const NoteModel = require('./note.model');
+const { TagModel } = require('../tags');
+const { FolderModel } = require('../folders');
+const { UserModel } = require('../users');
 
 const { TEST_MONGODB_URI, JWT_SECRET } = require('../config');
 
@@ -28,12 +31,12 @@ describe('Noteful API - Notes', function () {
 
   beforeEach(function () {
     return Promise.all([
-      User.insertMany(data.users),
-      Note.insertMany(data.notes),
-      Folder.insertMany(data.folders),
-      Tag.insertMany(data.tags),
-      Tag.createIndexes(),
-      Folder.createIndexes()
+      UserModel.insertMany(data.users),
+      NoteModel.insertMany(data.notes),
+      FolderModel.insertMany(data.folders),
+      TagModel.insertMany(data.tags),
+      TagModel.createIndexes(),
+      FolderModel.createIndexes()
     ])
       .then(([users]) => {
         user = users[0];
@@ -45,10 +48,10 @@ describe('Noteful API - Notes', function () {
   afterEach(function () {
     sandbox.restore();
     return Promise.all([
-      User.deleteMany(),
-      Note.deleteMany(),
-      Folder.deleteMany(),
-      Tag.deleteMany(),
+      UserModel.deleteMany(),
+      NoteModel.deleteMany(),
+      FolderModel.deleteMany(),
+      TagModel.deleteMany(),
     ]);
   });
 
@@ -61,7 +64,7 @@ describe('Noteful API - Notes', function () {
 
     it('should return the correct number of Notes', function () {
       return Promise.all([
-        Note.find({ userId: user.id }),
+        NoteModel.find({ userId: user.id }),
         chai.request(app)
           .get('/api/notes')
           .set('Authorization', `Bearer ${token}`)
@@ -76,7 +79,7 @@ describe('Noteful API - Notes', function () {
 
     it('should return a list sorted desc with the correct right fields', function () {
       return Promise.all([
-        Note.find({ userId: user.id }).sort({ updatedAt: 'desc' }),
+        NoteModel.find({ userId: user.id }).sort({ updatedAt: 'desc' }),
         chai.request(app)
           .get('/api/notes')
           .set('Authorization', `Bearer ${token}`)
@@ -88,7 +91,6 @@ describe('Noteful API - Notes', function () {
           expect(res.body).to.have.length(data.length);
           res.body.forEach(function (item, i) {
             expect(item).to.be.a('object');
-            // Note: folderId, tags and content are optional
             expect(item).to.include.all.keys('id', 'title', 'createdAt', 'updatedAt', 'userId');
             expect(item.id).to.equal(data[i].id);
             expect(item.title).to.equal(data[i].title);
@@ -104,11 +106,10 @@ describe('Noteful API - Notes', function () {
       const searchTerm = 'lady gaga';
 
       const re = new RegExp(searchTerm, 'i');
-      const dbPromise = Note
-        .find({
-          userId: user.id,
-          $or: [{ title: re }, { content: re }]
-        })
+      const dbPromise = NoteModel.find({
+        userId: user.id,
+        $or: [{ title: re }, { content: re }]
+      })
         .sort({ updatedAt: 'desc' });
 
       const apiPromise = chai.request(app)
@@ -123,7 +124,7 @@ describe('Noteful API - Notes', function () {
           expect(res.body).to.have.length(data.length);
           res.body.forEach(function (item, i) {
             expect(item).to.be.a('object');
-            expect(item).to.include.all.keys('id', 'title', 'createdAt', 'updatedAt', 'tags'); // Note: folderId and content are optional
+            expect(item).to.include.all.keys('id', 'title', 'createdAt', 'updatedAt', 'tags');
             expect(item.id).to.equal(data[i].id);
             expect(item.title).to.equal(data[i].title);
             expect(item.content).to.equal(data[i].content);
@@ -136,11 +137,10 @@ describe('Noteful API - Notes', function () {
     it('should return correct search results for content search', function () {
       const searchTerm = 'lorem ipsum';
       const re = new RegExp(searchTerm, 'i');
-      const dbPromise = Note
-        .find({
-          userId: user.id,
-          $or: [{ title: re }, { content: re }]
-        })
+      const dbPromise = NoteModel.find({
+        userId: user.id,
+        $or: [{ title: re }, { content: re }]
+      })
         .sort({ updatedAt: 'desc' });
       const apiPromise = chai.request(app)
         .get(`/api/notes?searchTerm=${searchTerm}`)
@@ -154,7 +154,7 @@ describe('Noteful API - Notes', function () {
           expect(res.body).to.have.length(data.length);
           res.body.forEach(function (item, i) {
             expect(item).to.be.a('object');
-            expect(item).to.include.all.keys('id', 'title', 'createdAt', 'updatedAt', 'tags'); // Note: folderId and content are optional
+            expect(item).to.include.all.keys('id', 'title', 'createdAt', 'updatedAt', 'tags');
             expect(item.id).to.equal(data[i].id);
             expect(item.title).to.equal(data[i].title);
             expect(item.content).to.equal(data[i].content);
@@ -166,11 +166,11 @@ describe('Noteful API - Notes', function () {
 
     it('should return correct search results for a folderId query', function () {
       let data;
-      return Folder.findOne()
+      return FolderModel.findOne()
         .then((_data) => {
           data = _data;
           return Promise.all([
-            Note.find({ folderId: data.id, userId: user.id }),
+            NoteModel.find({ folderId: data.id, userId: user.id }),
             chai.request(app)
               .get(`/api/notes?folderId=${data.id}`)
               .set('Authorization', `Bearer ${token}`)
@@ -186,11 +186,11 @@ describe('Noteful API - Notes', function () {
 
     it('should return correct search results for a tagId query', function () {
       let data;
-      return Tag.findOne()
+      return TagModel.findOne()
         .then((_data) => {
           data = _data;
           return Promise.all([
-            Note.find({ tags: data.id, userId: user.id, }),
+            NoteModel.find({ tags: data.id, userId: user.id, }),
             chai.request(app)
               .get(`/api/notes?tagId=${data.id}`)
               .set('Authorization', `Bearer ${token}`)
@@ -207,7 +207,7 @@ describe('Noteful API - Notes', function () {
     it('should return an empty array for an incorrect query', function () {
       const searchTerm = 'NOT-A-VALID-QUERY';
       const re = new RegExp(searchTerm, 'i');
-      const dbPromise = Note.find({
+      const dbPromise = NoteModel.find({
         userId: user.id,
         $or: [{ title: re }, { content: re }]
       }).sort({ updatedAt: 'desc' });
@@ -245,7 +245,7 @@ describe('Noteful API - Notes', function () {
 
     it('should return correct notes', function () {
       let data;
-      return Note.findOne({ userId: user.id })
+      return NoteModel.findOne({ userId: user.id })
         .then(_data => {
           data = _data;
           return chai.request(app)
@@ -256,7 +256,6 @@ describe('Noteful API - Notes', function () {
           expect(res).to.have.status(200);
           expect(res).to.be.json;
           expect(res.body).to.be.an('object');
-          // Note: folderId, tags and content are optional
           expect(res.body).to.include.all.keys('id', 'title', 'createdAt', 'updatedAt', 'userId');
           expect(res.body.id).to.equal(data.id);
           expect(res.body.title).to.equal(data.title);
@@ -278,7 +277,6 @@ describe('Noteful API - Notes', function () {
     });
 
     it('should respond with a 404 for an id that does not exist', function () {
-      // The string "DOESNOTEXIST" is 12 bytes which is a valid Mongo ObjectId
       return chai.request(app)
         .get('/api/notes/DOESNOTEXIST')
         .set('Authorization', `Bearer ${token}`)
@@ -290,7 +288,7 @@ describe('Noteful API - Notes', function () {
     it('should catch errors and respond properly', function () {
       sandbox.stub(db.get('toJSON'), 'transform').throws();
 
-      return Note.findOne()
+      return NoteModel.findOne()
         .then(data => {
           return chai.request(app)
             .get(`/api/notes/${data.id}`)
@@ -306,19 +304,11 @@ describe('Noteful API - Notes', function () {
 
   });
 
-  /*
-    √ folderId required, valid, ownership
-    folderId null
-    folderId ''
-    folderId NOT-VALID
-    folderId does not belong to you
-    folderId cannot be unset
-  */
   describe('POST /api/notes', function () {
 
     it('should create and return a new item when provided title and folderId', function () {
       let newItem, res;
-      return Folder.findOne({ userId: user.id })
+      return FolderModel.findOne({ userId: user.id })
         .then(result => {
           newItem = {
             title: 'The best article about cats ever!',
@@ -336,7 +326,7 @@ describe('Noteful API - Notes', function () {
           expect(res).to.be.json;
           expect(res.body).to.be.a('object');
           expect(res.body).to.have.all.keys('id', 'title', 'folderId', 'createdAt', 'updatedAt', 'tags', 'userId');
-          return Note.findOne({ _id: res.body.id, userId: user.id });
+          return NoteModel.findOne({ _id: res.body.id, userId: user.id });
         })
         .then(data => {
           expect(res.body.id).to.equal(data.id);
@@ -350,7 +340,7 @@ describe('Noteful API - Notes', function () {
 
     it('should create and return a new item when provided title, content, and folderId', function () {
       let newItem, res;
-      return Folder.findOne({ userId: user.id })
+      return FolderModel.findOne({ userId: user.id })
         .then(result => {
           newItem = {
             title: 'The best article about cats ever!',
@@ -369,7 +359,7 @@ describe('Noteful API - Notes', function () {
           expect(res).to.be.json;
           expect(res.body).to.be.a('object');
           expect(res.body).to.have.all.keys('id', 'title', 'content', 'folderId', 'createdAt', 'updatedAt', 'tags', 'userId');
-          return Note.findOne({ _id: res.body.id, userId: user.id });
+          return NoteModel.findOne({ _id: res.body.id, userId: user.id });
         })
         .then(data => {
           expect(res.body.id).to.equal(data.id);
@@ -416,7 +406,7 @@ describe('Noteful API - Notes', function () {
 
     it('should return an error when missing "title" field', function () {
       let newItem;
-      return Folder.findOne({ userId: user.id })
+      return FolderModel.findOne({ userId: user.id })
         .then(result => {
           newItem = {
             folderId: result.id
@@ -436,7 +426,7 @@ describe('Noteful API - Notes', function () {
 
     it('should return an error when "title" is empty string', function () {
       let newItem;
-      return Folder.findOne({ userId: user.id })
+      return FolderModel.findOne({ userId: user.id })
         .then(result => {
           newItem = {
             title: '',
@@ -474,7 +464,7 @@ describe('Noteful API - Notes', function () {
 
     it('should create and return a new item when provided title and folderId', function () {
       let newItem;
-      return Folder.findOne({ userId: user2.id })
+      return FolderModel.findOne({ userId: user2.id })
         .then(result => {
           newItem = {
             title: 'The best article about cats ever!',
@@ -496,7 +486,7 @@ describe('Noteful API - Notes', function () {
     it('should return an error when a tag `id` is not valid ', function () {
 
       let newItem;
-      return Folder.findOne({ userId: user.id })
+      return FolderModel.findOne({ userId: user.id })
         .then(result => {
           newItem = {
             title: 'The best article about cats ever!',
@@ -521,7 +511,7 @@ describe('Noteful API - Notes', function () {
       sandbox.stub(db.get('toJSON'), 'transform').throws();
 
       let newItem;
-      return Folder.findOne({ userId: user.id })
+      return FolderModel.findOne({ userId: user.id })
         .then(result => {
           newItem = {
             title: 'The best article about cats ever!',
@@ -550,7 +540,7 @@ describe('Noteful API - Notes', function () {
         title: 'What about dogs?!'
       };
       let data;
-      return Note.findOne({ userId: user.id }).populate('tags')
+      return NoteModel.findOne({ userId: user.id }).populate('tags')
         .then(_data => {
           data = _data;
           return chai.request(app)
@@ -577,7 +567,7 @@ describe('Noteful API - Notes', function () {
     it('should update the note when provided valid content', function () {
       const updateItem = { content: 'Lorem ipsum dolor sit amet...' };
       let data;
-      return Note.findOne({ userId: user.id })
+      return NoteModel.findOne({ userId: user.id })
         .then(_data => {
           data = _data;
           return chai.request(app)
@@ -607,8 +597,8 @@ describe('Noteful API - Notes', function () {
       let data;
 
       return Promise.all([
-        Folder.findOne({ userId: user.id }),
-        Note.findOne({ userId: user.id })
+        FolderModel.findOne({ userId: user.id }),
+        NoteModel.findOne({ userId: user.id })
       ])
         .then(([folder, note]) => {
           updateItem.folderId = folder.id;
@@ -640,8 +630,8 @@ describe('Noteful API - Notes', function () {
       let data;
       const assert = require('assert');
       return Promise.all([
-        Tag.findOne({ userId: user.id }),
-        Note.findOne({ userId: user.id })
+        TagModel.findOne({ userId: user.id }),
+        NoteModel.findOne({ userId: user.id })
       ])
         .then(([tag, note]) => {
           updateItem.tags.push(tag.id);
@@ -684,7 +674,6 @@ describe('Noteful API - Notes', function () {
     });
 
     it('should respond with a 404 for an id that does not exist', function () {
-      // The string "DOESNOTEXIST" is 12 bytes which is a valid Mongo ObjectId
       const updateItem = {
         title: 'What about dogs?!',
         content: 'Lorem ipsum dolor sit amet, sed do eiusmod tempor...'
@@ -701,7 +690,7 @@ describe('Noteful API - Notes', function () {
     it('should return an error when "title" is an empty string', function () {
       const updateItem = { title: '' };
       let data;
-      return Note.findOne({ userId: user.id })
+      return NoteModel.findOne({ userId: user.id })
         .then(_data => {
           data = _data;
           return chai.request(app)
@@ -721,7 +710,7 @@ describe('Noteful API - Notes', function () {
       const updateItem = {
         folderId: 'NOT-A-VALID-ID'
       };
-      return Note.findOne({ userId: user.id })
+      return NoteModel.findOne({ userId: user.id })
         .then(data => {
           return chai.request(app)
             .put(`/api/notes/${data.id}`)
@@ -740,7 +729,7 @@ describe('Noteful API - Notes', function () {
       const updateItem = {
         tags: ['NOT-A-VALID-ID']
       };
-      return Note.findOne({ userId: user.id })
+      return NoteModel.findOne({ userId: user.id })
         .then(data => {
           return chai.request(app)
             .put(`/api/notes/${data.id}`)
@@ -762,7 +751,7 @@ describe('Noteful API - Notes', function () {
         title: 'What about dogs?!',
         content: 'Lorem ipsum dolor sit amet, sed do eiusmod tempor...'
       };
-      return Note.findOne()
+      return NoteModel.findOne()
         .then(data => {
           return chai.request(app)
             .put(`/api/notes/${data.id}`)
@@ -776,13 +765,14 @@ describe('Noteful API - Notes', function () {
           expect(res.body.message).to.equal('Internal Server Error');
         });
     });
+
   });
 
   describe('DELETE /api/notes/:id', function () {
 
     it('should delete an existing document and respond with 204', function () {
       let data;
-      return Note.findOne({ userId: user.id })
+      return NoteModel.findOne({ userId: user.id })
         .then(_data => {
           data = _data;
 
@@ -792,7 +782,7 @@ describe('Noteful API - Notes', function () {
         })
         .then(res => {
           expect(res).to.have.status(204);
-          return Note.countDocuments({ _id: data.id });
+          return NoteModel.countDocuments({ _id: data.id });
         })
         .then(count => {
           expect(count).to.equal(0);
@@ -812,7 +802,7 @@ describe('Noteful API - Notes', function () {
     it('should catch errors and respond properly', function () {
       sandbox.stub(express.response, 'sendStatus').throws();
 
-      return Note.findOne()
+      return NoteModel.findOne()
         .then(data => {
           return chai.request(app)
             .delete(`/api/notes/${data.id}`)

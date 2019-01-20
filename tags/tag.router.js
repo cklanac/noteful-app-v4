@@ -1,8 +1,9 @@
 const express = require('express');
+const createError = require('http-errors');
 const debug = require('debug')('app:routes');
 
 const { jwtAuth } = require('../middleware');
-const { note } = require('../services');
+const tagService = require('./tag.service');
 
 const router = express.Router();
 
@@ -13,7 +14,7 @@ router.get('/', (req, res, next) => {
   debug(req.originalUrl);
   const userId = req.user.id;
 
-  note.findAll(userId, req.query)
+  tagService.findAll(userId)
     .then(results => {
       res.json(results);
     })
@@ -28,7 +29,7 @@ router.get('/:id', (req, res, next) => {
   const { id } = req.params;
   const userId = req.user.id;
 
-  note.findOne(id, userId)
+  tagService.findOne(id, userId)
     .then(result => {
       if (result) {
         res.json(result);
@@ -44,16 +45,17 @@ router.get('/:id', (req, res, next) => {
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
   debug(req.originalUrl);
-  const { title, content, folderId, tags } = req.body;
+  const { name } = req.body;
   const userId = req.user.id;
 
-  const newNote = { title, content, folderId, tags, userId };
-
-  note.insert(newNote, userId)
+  tagService.insert({ name }, userId)
     .then(result => {
       res.location(`${req.originalUrl}/${result.id}`).status(201).json(result);
     })
     .catch(err => {
+      if (err.code === 11000) {
+        err = createError(409, `Resource '${name}' must be unique`);
+      }
       next(err);
     });
 });
@@ -62,18 +64,10 @@ router.post('/', (req, res, next) => {
 router.put('/:id', (req, res, next) => {
   debug(req.originalUrl);
   const { id } = req.params;
+  const { name } = req.body;
   const userId = req.user.id;
 
-  const toUpdate = {};
-  const updateableFields = ['title', 'content', 'folderId', 'tags'];
-
-  updateableFields.forEach(field => {
-    if (field in req.body) {
-      toUpdate[field] = req.body[field];
-    }
-  });
-
-  return note.modify(id, userId, toUpdate)
+  tagService.modify(id, userId, { name })
     .then(result => {
       if (result) {
         res.json(result);
@@ -82,6 +76,9 @@ router.put('/:id', (req, res, next) => {
       }
     })
     .catch(err => {
+      if (err.code === 11000) {
+        err = createError(409, `Resource '${name}' must be unique`);
+      }
       next(err);
     });
 });
@@ -92,7 +89,7 @@ router.delete('/:id', (req, res, next) => {
   const { id } = req.params;
   const userId = req.user.id;
 
-  note.remove(id, userId)
+  tagService.remove(id, userId)
     .then(() => {
       res.sendStatus(204);
     })
