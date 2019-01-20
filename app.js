@@ -7,10 +7,11 @@ const cookieParser = require('cookie-parser');
 const debug = require('debug')('app:init');
 
 const { authRouter } = require('./auth');
+const { userRouter } = require('./users');
+
 const { folderRouter } = require('./folders');
 const { noteRouter } = require('./notes');
 const { tagRouter } = require('./tags');
-const { userRouter } = require('./users');
 
 const { cors, logger, notFound, errorHandler } = require('./middleware');
 
@@ -31,9 +32,10 @@ app.use(cookieParser());
 
 debug('load routes');
 app.use('/api/auth', authRouter);
+app.use('/api/users', userRouter);
+
 app.use('/api/folders', folderRouter);
 app.use('/api/notes', noteRouter);
-app.use('/api/users', userRouter);
 app.use('/api/tags', tagRouter);
 
 debug('load error handlers');

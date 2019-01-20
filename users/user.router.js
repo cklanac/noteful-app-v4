@@ -82,9 +82,9 @@ router.post('/', (req, res, next) => {
       return res.status(201).location(`/api/users/${result.id}`).json(result);
     })
     .catch(err => {
-      if (err.code === 11000) {
-        err = createError(409, `Resource '${username}' must be unique`);
-      }
+      // if (err.code === 11000) {
+      //   err = createError(409, `Resource '${username}' must be unique`);
+      // }
       next(err);
     });
 });
