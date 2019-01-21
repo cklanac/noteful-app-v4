@@ -10,7 +10,6 @@ const debug = require('debug')('app:init');
 
 const { authRouter } = require('./auth');
 const { userRouter } = require('./users');
-
 const { folderRouter } = require('./folders');
 const { noteRouter } = require('./notes');
 const { tagRouter } = require('./tags');
@@ -19,9 +18,9 @@ const custom = require('./middleware');
 
 debug('initialize express');
 const app = express();
-
 debug('load middleware');
-app.use(custom.logger);
+
+app.use(custom.accessLogger);
 app.use(helmet());
 app.use(compression());
 

@@ -1,5 +1,5 @@
 exports.cors = require('./cors');
-exports.logger = require('./logger');
+exports.accessLogger = require('./access-logger');
 
 exports.errNotFound = require('./error-notfound');
 exports.errDatabase = require('./error-database');
