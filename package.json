@@ -13,7 +13,7 @@
     "seed": "node ./utils/generate-data.js",
     "test": "NODE_ENV=test mocha --opts ./mocha.opts ./**/*.test.js",
     "coverage": "nyc --reporter=lcov --reporter=text-summary npm test",
-    "threshold": "nyc check-coverage --lines 95 --functions 95 --branches 95"
+    "threshold": "nyc check-coverage --lines 100 --functions 100 --branches 100"
   },
   "dependencies": {
     "app-root-path": "^2.1.0",
