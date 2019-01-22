@@ -11,7 +11,7 @@ function localAuth(req, res, next) {
   if (!username || !password) {
     debug('missing provided');
     const err = createError(400, 'Bad Request');
-    next(err);
+    return next(err);
   }
 
   debug('authenticate %o', username);
@@ -23,7 +23,7 @@ function localAuth(req, res, next) {
         debug("username '%o' not found ", username);
         const err = createError(401, 'Invalid credentials');
         err.location = 'username';
-        next(err);
+        return Promise.reject(err);
       }
 
       return bcrypt.compare(password, user.password);
@@ -34,7 +34,7 @@ function localAuth(req, res, next) {
         debug("password for '%0' not valid", username);
         const err = createError(401, 'Invalid credentials');
         err.location = 'password';
-        next(err);
+        return Promise.reject(err);
       }
       req.user = user;
       debug('authenticated %o', req.user);
