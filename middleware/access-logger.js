@@ -3,7 +3,7 @@
 const morgan = require('morgan');
 const logger = require('../helpers/winston');
 
-const format = (process.env.NODE_ENV === 'production') ? 'combined' : 'dev';
+const format = process.env.LOG_FORMAT;
 
 /**
  * `write` property points to the `logger.info` method

@@ -10,9 +10,10 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
+    "seed": "node ./utils/generate-data.js",
     "test": "NODE_ENV=test mocha --opts ./mocha.opts ./**/*.test.js",
-    "cover": "nyc --reporter=lcov --reporter=text-summary npm test",
-    "seed": "node ./utils/generate-data.js"
+    "coverage": "nyc --reporter=lcov --reporter=text-summary npm test",
+    "threshold": "nyc check-coverage --lines 95 --functions 95 --branches 95"
   },
   "dependencies": {
     "app-root-path": "^2.1.0",

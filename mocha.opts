@@ -1,7 +1,7 @@
 --timeout 5000
 --bail
 
---grep #sinon
---invert
+# --grep #sinon
+# --invert
 
 # --exclude './node_modules/**'
