@@ -9,8 +9,9 @@ const app = require('../app');
 
 const expect = chai.expect;
 
-
 chai.use(chaiHttp);
+
+console.log(app.get('env'))
 
 describe('Reality Check', () => {
 
@@ -24,13 +25,6 @@ describe('Reality Check', () => {
 
 });
 
-describe('Environment', () => {
-
-  it('NODE_ENV should be "test"', () => {
-    expect(app.get('env')).to.equal('test');
-  });
-
-});
 
 describe('Basic Express setup', () => {
 
