@@ -225,7 +225,7 @@ describe('Noteful API - Notes', function () {
         });
     });
 
-    it('should catch errors and respond properly', function () {
+    it('should catch errors and respond properly (#sinon)', function () {
       sandbox.stub(db.get('toJSON'), 'transform').throws();
 
       return chai.request(app)
@@ -285,7 +285,7 @@ describe('Noteful API - Notes', function () {
         });
     });
 
-    it('should catch errors and respond properly', function () {
+    it('should catch errors and respond properly (#sinon)', function () {
       sandbox.stub(db.get('toJSON'), 'transform').throws();
 
       return NoteModel.findOne()
@@ -507,7 +507,7 @@ describe('Noteful API - Notes', function () {
         });
     });
 
-    it('should catch errors and respond properly', function () {
+    it('should catch errors and respond properly (#sinon)', function () {
       sandbox.stub(db.get('toJSON'), 'transform').throws();
 
       let newItem;
@@ -743,7 +743,7 @@ describe('Noteful API - Notes', function () {
         });
     });
 
-    it('should catch errors and respond properly', function () {
+    it('should catch errors and respond properly (#sinon)', function () {
       sandbox.stub(db.get('toJSON'), 'transform').throws();
 
       const updateItem = {
@@ -798,7 +798,7 @@ describe('Noteful API - Notes', function () {
         });
     });
 
-    it('should catch errors and respond properly', function () {
+    it('should catch errors and respond properly (#sinon)', function () {
       sandbox.stub(express.response, 'sendStatus').throws();
 
       return NoteModel.findOne()

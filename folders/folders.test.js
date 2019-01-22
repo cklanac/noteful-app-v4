@@ -93,7 +93,7 @@ describe('Noteful API - Folders', function () {
         });
     });
 
-    it('should catch errors and respond properly', function () {
+    it('should catch errors and respond properly (#sinon)', function () {
       sandbox.stub(db.get('toJSON'), 'transform').throws();
       return chai.request(app).get('/api/folders')
         .set('Authorization', `Bearer ${token}`)
@@ -149,7 +149,7 @@ describe('Noteful API - Folders', function () {
         });
     });
 
-    it('should catch errors and respond properly', function () {
+    it('should catch errors and respond properly (#sinon)', function () {
       sandbox.stub(db.get('toJSON'), 'transform').throws();
       let data;
 
@@ -243,7 +243,7 @@ describe('Noteful API - Folders', function () {
         });
     });
 
-    it('should catch errors and respond properly', function () {
+    it('should catch errors and respond properly (#sinon)', function () {
       sandbox.stub(db.get('toJSON'), 'transform').throws();
 
       const newItem = { name: 'newFolder' };
@@ -368,7 +368,7 @@ describe('Noteful API - Folders', function () {
         });
     });
 
-    it('should catch errors and respond properly', function () {
+    it('should catch errors and respond properly (#sinon)', function () {
       sandbox.stub(db.get('toJSON'), 'transform').throws();
 
       const updateItem = { name: 'Updated Name' };
@@ -440,7 +440,7 @@ describe('Noteful API - Folders', function () {
         });
     });
 
-    it('should catch errors and respond properly', function () {
+    it('should catch errors and respond properly (#sinon)', function () {
       sandbox.stub(express.response, 'sendStatus').throws();
 
       return FolderModel.findOne()

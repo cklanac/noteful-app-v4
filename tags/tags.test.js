@@ -95,7 +95,7 @@ describe('Noteful API - Tags', function () {
         });
     });
 
-    it('should catch errors and respond properly', function () {
+    it('should catch errors and respond properly (#sinon)', function () {
       sandbox.stub(db.get('toJSON'), 'transform').throws();
 
       return chai.request(app)
@@ -155,7 +155,7 @@ describe('Noteful API - Tags', function () {
         });
     });
 
-    it('should catch errors and respond properly', function () {
+    it('should catch errors and respond properly (#sinon)', function () {
       sandbox.stub(db.get('toJSON'), 'transform').throws();
 
       return TagModel.findOne()
@@ -250,7 +250,7 @@ describe('Noteful API - Tags', function () {
         });
     });
 
-    it('should catch errors and respond properly', function () {
+    it('should catch errors and respond properly (#sinon)', function () {
       sandbox.stub(db.get('toJSON'), 'transform').throws();
 
       const newItem = { name: 'newTag' };
@@ -376,7 +376,7 @@ describe('Noteful API - Tags', function () {
         });
     });
 
-    it('should catch errors and respond properly', function () {
+    it('should catch errors and respond properly (#sinon)', function () {
       sandbox.stub(db.get('toJSON'), 'transform').throws();
 
       const updateItem = { name: 'Updated Name' };
@@ -448,7 +448,7 @@ describe('Noteful API - Tags', function () {
         });
     });
 
-    it('should catch errors and respond properly', function () {
+    it('should catch errors and respond properly (#sinon)', function () {
       sandbox.stub(express.response, 'sendStatus').throws();
 
       return TagModel.findOne()
